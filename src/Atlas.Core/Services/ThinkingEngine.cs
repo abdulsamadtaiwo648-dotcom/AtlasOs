@@ -18,6 +18,21 @@ public class ThinkingEngine
 
         switch (intent.Type)
         {
+            case IntentType.SmartHome:
+                result.TargetEngine = "SmartHome";
+                result.ShouldUseAI = false;
+                break;
+
+            case IntentType.System:
+                result.TargetEngine = "System";
+                result.ShouldUseAI = false;
+                break;
+
+            case IntentType.Vision:
+                result.TargetEngine = "Vision";
+                result.ShouldUseAI = false;
+                break;
+
             case IntentType.Finance:
                 result.TargetEngine = "Finance";
                 result.ShouldUseAI = false;

@@ -25,7 +25,34 @@ public class IntentEngine
                 t.Contains("crypto") ||
                 t.Contains("currency") ||
                 t.Contains("inflation") ||
-                t.Contains("bank")
+                t.Contains("bank") ||
+                t.Contains("forex") ||
+                t.Contains("trade") ||
+                t.Contains("trading") ||
+                t.Contains("order block") ||
+                t.Contains("fair value gap") ||
+                t.Contains("fvg") ||
+                t.Contains("liquidity") ||
+                t.Contains("bos") ||
+                t.Contains("choch") ||
+                t.Contains("mss") ||
+                t.Contains("daily bias") ||
+                t.Contains("kill zone") ||
+                t.Contains("gold") ||
+                t.Contains("silver") ||
+                t.Contains("crude oil") ||
+                t.Contains("wti") ||
+                t.Contains("eurusd") ||
+                t.Contains("gbpusd") ||
+                t.Contains("usdjpy") ||
+                t.Contains("btc") ||
+                t.Contains("eth") ||
+                t.Contains("sol") ||
+                t.Contains("aapl") ||
+                t.Contains("tsla") ||
+                t.Contains("nvda") ||
+                t.Contains("vix") ||
+                t.Contains("dxy")
                 => IntentType.Finance,
 
             var t when
@@ -64,6 +91,19 @@ public class IntentEngine
                 t.Contains("remind")
                 => IntentType.Automation,
 
+            var t when IsSystemCommand(t)
+                => IntentType.System,
+
+            var t when
+                t.Contains("camera") ||
+                t.Contains("who is at") ||
+                t.Contains("face") ||
+                t.Contains("motion") ||
+                t.Contains("detect") ||
+                t.Contains("surveillance") ||
+                t.Contains("security camera")
+                => IntentType.Vision,
+
             _ => IntentType.Conversation
         };
 
@@ -76,6 +116,8 @@ public class IntentEngine
             IntentType.Coding => 0.85,
             IntentType.Research => 0.85,
             IntentType.Automation => 0.85,
+            IntentType.System => 0.95,
+            IntentType.Vision => 0.90,
             _ => 0.50
         };
 
@@ -136,5 +178,27 @@ public class IntentEngine
        return Regex.IsMatch(
     text,
     @"^\s*[\d\+\-\*/\^\(\)\.= ]+\s*$");
+    }
+
+    private static readonly string[] SystemVerbs =
+        { "open", "launch", "start", "run", "close", "kill", "exit", "shutdown", "restart" };
+
+    private static readonly string[] HomeWords =
+        { "thermostat", "garage", "curtain", "television", "fan", "lamp", "bulb" };
+
+    private static bool IsSystemCommand(string text)
+    {
+        // Must contain a system verb
+        bool hasVerb = SystemVerbs.Any(v =>
+            text.Contains($" {v} ") ||
+            text.StartsWith($"{v} ") ||
+            text.EndsWith($" {v}") ||
+            text == v);
+
+        if (!hasVerb) return false;
+
+        // Must NOT be a smart-home command
+        bool isHome = HomeWords.Any(text.Contains);
+        return !isHome;
     }
 }

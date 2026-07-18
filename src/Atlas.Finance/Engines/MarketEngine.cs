@@ -110,4 +110,9 @@ public class MarketEngine : IMarketEngine
 
         return 60;
     }
+
+    public async Task<List<Atlas.Finance.Models.Analysis.HistoricalPrice>> GetHistoricalPricesAsync(string symbol, int days = 30)
+    {
+        return await _provider.GetHistoricalPricesAsync(symbol, days);
+    }
 }

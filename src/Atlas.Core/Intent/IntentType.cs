@@ -18,5 +18,9 @@ public enum IntentType
 
     Coding,
 
-    Automation
+    Automation,
+
+    System,
+
+    Vision
 }

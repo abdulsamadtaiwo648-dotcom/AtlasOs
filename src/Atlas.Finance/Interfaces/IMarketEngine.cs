@@ -11,4 +11,6 @@ public interface IMarketEngine
     Task<MarketSummary> AnalyzeForexAsync(string pair);
 
     Task<MarketSummary> AnalyzeCommodityAsync(string symbol);
+
+    Task<List<Atlas.Finance.Models.Analysis.HistoricalPrice>> GetHistoricalPricesAsync(string symbol, int days = 30);
 }

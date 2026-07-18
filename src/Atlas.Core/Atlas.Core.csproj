@@ -4,6 +4,9 @@
     <ProjectReference Include="..\Atlas.Tools\Atlas.Tools.csproj" />
     <ProjectReference Include="..\Atlas.Finance\Atlas.Finance.csproj" />
     <ProjectReference Include="..\Atlas.Speech\Atlas.Speech.csproj" />
+    <ProjectReference Include="..\Atlas.SmartHome\Atlas.SmartHome.csproj" />
+    <ProjectReference Include="..\Atlas.System\Atlas.System.csproj" />
+    <ProjectReference Include="..\Atlas.Vision\Atlas.Vision.csproj" />
   </ItemGroup>
 
   <ItemGroup>

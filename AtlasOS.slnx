@@ -5,8 +5,13 @@
     <Project Path="src/Atlas.Console/Atlas.Console.csproj" />
     <Project Path="src/Atlas.Core/Atlas.Core.csproj" />
     <Project Path="src/Atlas.Finance/Atlas.Finance.csproj" />
+    <Project Path="src/Atlas.Math/Atlas.Math.csproj" />
     <Project Path="src/Atlas.Memory/Atlas.Memory.csproj" />
+    <Project Path="src/Atlas.SmartHome/Atlas.SmartHome.csproj" />
     <Project Path="src/Atlas.Speech/Atlas.Speech.csproj" />
+    <Project Path="src/Atlas.System/Atlas.System.csproj" />
     <Project Path="src/Atlas.Tools/Atlas.Tools.csproj" />
+    <Project Path="src/Atlas.UI/Atlas.UI.csproj" />
+    <Project Path="src/Atlas.Vision/Atlas.Vision.csproj" />
   </Folder>
 </Solution>

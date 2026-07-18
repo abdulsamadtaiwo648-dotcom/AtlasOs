@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Core\Atlas.Core.csproj" />
+    <ProjectReference Include="..\Atlas.AI\Atlas.AI.csproj" />
+    <ProjectReference Include="..\Atlas.Finance\Atlas.Finance.csproj" />
+    <ProjectReference Include="..\Atlas.System\Atlas.System.csproj" />
+    <ProjectReference Include="..\Atlas.Speech\Atlas.Speech.csproj" />
+    <ProjectReference Include="..\Atlas.Tools\Atlas.Tools.csproj" />
+    <ProjectReference Include="..\Atlas.Vision\Atlas.Vision.csproj" />
+    <ProjectReference Include="..\Atlas.SmartHome\Atlas.SmartHome.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+</Project>

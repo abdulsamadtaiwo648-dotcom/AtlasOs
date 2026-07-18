@@ -1,0 +1,317 @@
+<Window x:Class="AtlasUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Atlas OS" Height="750" Width="1100"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResizeWithGrip">
+
+    <Window.Resources>
+        <!-- Glow effect for orb -->
+        <DropShadowEffect x:Key="OrbGlow" Color="#4488FF" BlurRadius="40" ShadowDepth="0" Opacity="0.8"/>
+        <DropShadowEffect x:Key="OrbGlowListen" Color="#FF4466" BlurRadius="50" ShadowDepth="0" Opacity="1.0"/>
+        <DropShadowEffect x:Key="OrbGlowSpeak" Color="#44FFBB" BlurRadius="50" ShadowDepth="0" Opacity="1.0"/>
+        <DropShadowEffect x:Key="TextGlow" Color="#4488FF" BlurRadius="8" ShadowDepth="0" Opacity="0.6"/>
+
+        <!-- Pulse animation storyboard -->
+        <Storyboard x:Key="PulseIdle" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleX"
+                             From="1.0" To="1.08" Duration="0:0:2" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleY"
+                             From="1.0" To="1.08" Duration="0:0:2" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="OrbGlowEffect" Storyboard.TargetProperty="Opacity"
+                             From="0.5" To="1.0" Duration="0:0:2" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="PulseListen" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleX"
+                             From="1.0" To="1.20" Duration="0:0:0.6" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleY"
+                             From="1.0" To="1.20" Duration="0:0:0.6" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <Storyboard x:Key="PulseSpeak" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleX"
+                             From="1.0" To="1.12" Duration="0:0:0.3" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="OrbScale" Storyboard.TargetProperty="ScaleY"
+                             From="1.0" To="1.12" Duration="0:0:0.3" AutoReverse="True">
+                <DoubleAnimation.EasingFunction><SineEase EasingMode="EaseInOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Fade in animation for messages -->
+        <Storyboard x:Key="FadeIn">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut"/></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+
+        <!-- Scrollbar style -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="4"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+    </Window.Resources>
+
+    <!-- Main container with rounded corners -->
+    <Border CornerRadius="20" Background="#0D0F1A" BorderBrush="#1E2340" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="30" ShadowDepth="0" Opacity="0.7"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48"/>    <!-- Title bar -->
+                <RowDefinition Height="*"/>     <!-- Chat area -->
+                <RowDefinition Height="Auto"/>  <!-- Orb + status -->
+                <RowDefinition Height="80"/>    <!-- Input bar -->
+            </Grid.RowDefinitions>
+
+            <!-- ═══ TITLE BAR ═══════════════════════════════════════════════════ -->
+            <Border Grid.Row="0" CornerRadius="20,20,0,0" Background="#0A0C16" MouseLeftButtonDown="TitleBar_MouseDown">
+                <Grid Margin="20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Atlas logo dot -->
+                        <Ellipse Width="10" Height="10" Margin="0,0,10,0">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#88BBFF" Offset="0"/>
+                                    <GradientStop Color="#4466FF" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                            <Ellipse.Effect>
+                                <DropShadowEffect Color="#4488FF" BlurRadius="10" ShadowDepth="0"/>
+                            </Ellipse.Effect>
+                        </Ellipse>
+                        <TextBlock Text="ATLAS OS" Foreground="#8899CC" FontSize="13" FontWeight="Bold"
+                                   VerticalAlignment="Center"
+                                   FontFamily="Segoe UI"/>
+                        <TextBlock x:Name="StatusLabel" Text=" — Ready" Foreground="#445588"
+                                   FontSize="12" VerticalAlignment="Center" FontFamily="Segoe UI"/>
+                    </StackPanel>
+
+                    <!-- Window controls -->
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button x:Name="MinBtn" Content="─" Width="36" Height="36"
+                                Background="Transparent" Foreground="#556688" BorderThickness="0"
+                                FontSize="14" Click="MinBtn_Click" Cursor="Hand"/>
+                        <Button x:Name="CloseBtn" Content="✕" Width="36" Height="36"
+                                Background="Transparent" Foreground="#556688" BorderThickness="0"
+                                FontSize="14" Click="CloseBtn_Click" Cursor="Hand">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="6">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="Bd" Property="Background" Value="#CC2233"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Setter Property="Foreground" Value="#FF6677"/>
+                                    <Setter Property="FontSize" Value="14"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ═══ CHAT AREA ════════════════════════════════════════════════════ -->
+            <ScrollViewer x:Name="ChatScroll" Grid.Row="1"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled"
+                          Padding="24,16">
+                <StackPanel x:Name="MessagePanel" />
+            </ScrollViewer>
+
+            <!-- ═══ ORB + STATUS ══════════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" Height="180">
+
+                <!-- Ambient glow background -->
+                <Ellipse Width="260" Height="160" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#1A2060" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="1"/>
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <!-- Waveform bars (7 bars that animate during speech) -->
+                <StackPanel x:Name="WaveformPanel"
+                            Orientation="Horizontal"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,0">
+                    <Rectangle x:Name="Bar1" Width="4" Height="8"  Fill="#4466FF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                    <Rectangle x:Name="Bar2" Width="4" Height="16" Fill="#4488FF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                    <Rectangle x:Name="Bar3" Width="4" Height="32" Fill="#44AAFF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                    <Rectangle x:Name="Bar4" Width="4" Height="48" Fill="#66BBFF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.7"/>
+                    <Rectangle x:Name="Bar5" Width="4" Height="32" Fill="#44AAFF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                    <Rectangle x:Name="Bar6" Width="4" Height="16" Fill="#4488FF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                    <Rectangle x:Name="Bar7" Width="4" Height="8"  Fill="#4466FF" RadiusX="2" RadiusY="2" Margin="3,0" Opacity="0.5"/>
+                </StackPanel>
+
+                <!-- Orb -->
+                <Ellipse x:Name="OrbElement"
+                         Width="90" Height="90"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Effect="{StaticResource OrbGlow}">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#AACCFF" Offset="0"/>
+                            <GradientStop Color="#2255CC" Offset="0.6"/>
+                            <GradientStop Color="#0A1040" Offset="1"/>
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                    <Ellipse.RenderTransform>
+                        <ScaleTransform x:Name="OrbScale" ScaleX="1" ScaleY="1"
+                                        CenterX="45" CenterY="45"/>
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+
+                <!-- Orb glow ring -->
+                <Ellipse x:Name="OrbRing"
+                         Width="90" Height="90"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center"
+                         Stroke="#4466FF" StrokeThickness="1.5"
+                         Opacity="0.5" Fill="Transparent">
+                    <Ellipse.Effect>
+                        <DropShadowEffect x:Name="OrbGlowEffect" Color="#4488FF" BlurRadius="20"
+                                          ShadowDepth="0" Opacity="0.8"/>
+                    </Ellipse.Effect>
+                    <Ellipse.RenderTransform>
+                        <ScaleTransform ScaleX="1.15" ScaleY="1.15" CenterX="45" CenterY="45"/>
+                    </Ellipse.RenderTransform>
+                </Ellipse>
+
+                <!-- Orb click button (invisible overlay) -->
+                <Button x:Name="OrbButton"
+                        Width="90" Height="90"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="OrbButton_Click"
+                        ToolTip="Click to speak (or press Enter)">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="Transparent" IsHitTestVisible="True"/>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Status text below orb -->
+                <TextBlock x:Name="OrbStatusText"
+                           Text="Click orb or press Enter to speak"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Bottom"
+                           Margin="0,0,0,10"
+                           Foreground="#445588"
+                           FontSize="12"
+                           FontFamily="Segoe UI"/>
+            </Grid>
+
+            <!-- ═══ INPUT BAR ══════════════════════════════════════════════════════ -->
+            <Border Grid.Row="3" CornerRadius="0,0,20,20"
+                    Background="#080A14" BorderBrush="#1A1E30" BorderThickness="0,1,0,0">
+                <Grid Margin="20,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border CornerRadius="24" Background="#0E1128"
+                            BorderBrush="#1E2850" BorderThickness="1"
+                            VerticalAlignment="Center">
+                        <Grid>
+                            <TextBlock x:Name="PlaceholderText"
+                                       Text="Type a message or click the orb to speak..."
+                                       Foreground="#334466"
+                                       FontSize="14"
+                                       FontFamily="Segoe UI"
+                                       VerticalAlignment="Center"
+                                       Margin="18,0,0,0"
+                                       IsHitTestVisible="False"/>
+                            <TextBox x:Name="InputBox"
+                                     Background="Transparent"
+                                     Foreground="#AABBDD"
+                                     BorderThickness="0"
+                                     FontSize="14"
+                                     FontFamily="Segoe UI"
+                                     Padding="16,0"
+                                     Height="48"
+                                     VerticalContentAlignment="Center"
+                                     CaretBrush="#4488FF"
+                                     KeyDown="InputBox_KeyDown"
+                                     TextChanged="InputBox_TextChanged"/>
+                        </Grid>
+                    </Border>
+
+                    <Button x:Name="SendButton"
+                            Grid.Column="1"
+                            Width="48" Height="48"
+                            Margin="12,0,0,0"
+                            Cursor="Hand"
+                            Click="SendButton_Click"
+                            ToolTip="Send (Enter)">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="SendBd" CornerRadius="24" Width="48" Height="48">
+                                    <Border.Background>
+                                        <RadialGradientBrush>
+                                            <GradientStop Color="#4477FF" Offset="0"/>
+                                            <GradientStop Color="#1133CC" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Border.Background>
+                                    <TextBlock Text="➤" FontSize="18" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="SendBd" Property="Opacity" Value="0.8"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                        <Button.Effect>
+                            <DropShadowEffect Color="#4466FF" BlurRadius="12" ShadowDepth="0" Opacity="0.6"/>
+                        </Button.Effect>
+                    </Button>
+                </Grid>
+            </Border>
+
+        </Grid>
+    </Border>
+</Window>

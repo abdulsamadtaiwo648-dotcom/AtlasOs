@@ -1,4 +1,4 @@
-﻿using Atlas.AI.Providers;
+using Atlas.AI.Providers;
 using Atlas.Core.Commands;
 using Atlas.Core.Interfaces;
 using Atlas.Core.Planning;
@@ -15,6 +15,7 @@ using Atlas.Finance.Engines;
 using Atlas.Tools.Services;
 using Atlas.Finance.Providers;
 using Atlas.Finance.Context;
+using Atlas.Core.Clock;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -29,11 +30,23 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 // ======================================================
 builder.Services.AddHttpClient();
 // Finance
-builder.Services.AddSingleton<IFinanceProvider, CoinGeckoProvider>();
+builder.Services.AddSingleton<IFinanceProvider, YahooFinanceProvider>();
 builder.Services.AddSingleton<IMarketEngine, MarketEngine>();
 builder.Services.AddSingleton<IEconomyEngine, EconomyEngine>();
 builder.Services.AddSingleton<IFinanceEngine, FinanceEngine>();
 builder.Services.AddSingleton<FinanceContextBuilder>();
+
+// Smart Home
+builder.Services.AddSingleton<Atlas.SmartHome.Interfaces.ISmartHomeProvider, Atlas.SmartHome.Providers.SimulationProvider.SimulationProvider>();
+builder.Services.AddSingleton<Atlas.SmartHome.Services.SmartHomeEngine>();
+
+// System (App Launcher)
+builder.Services.AddSingleton<Atlas.System.Interfaces.IAppLauncher, Atlas.System.Providers.WindowsAppLauncher>();
+builder.Services.AddSingleton<Atlas.System.Services.AppLauncherEngine>();
+
+// Vision
+builder.Services.AddSingleton<Atlas.Vision.Interfaces.IVisionProvider, Atlas.Vision.Providers.SimulationVisionProvider>();
+builder.Services.AddSingleton<Atlas.Vision.Services.VisionEngine>();
 
 builder.Services.AddSingleton<ContextBuilder>();
 
@@ -42,6 +55,7 @@ builder.Services.AddSingleton<RiskAnalyzer>();
 builder.Services.AddSingleton<PortfolioAnalyzer>();
 builder.Services.AddSingleton<TechnicalAnalyzer>();
 builder.Services.AddSingleton<InvestmentAnalyzer>();
+builder.Services.AddSingleton<ChartEngine>();
 
 // ======================================================
 // AI
@@ -101,6 +115,18 @@ builder.Services.AddSingleton<IAtlasKernel, AtlasKernel>();
 builder.Services.AddSingleton<IntentEngine>();
 builder.Services.AddSingleton<ThinkingEngine>();
 
+
+// ======================================================
+// Clock
+// ======================================================
+builder.Services.AddSingleton<IClockEngine, ClockEngine>();
+
+builder.Services.AddSingleton<CalendarEngine>();
+
+builder.Services.AddSingleton<TimeZoneEngine>();
+
+builder.Services.AddSingleton<WorldClockEngine>();
+
 // ======================================================
 // Build
 // ======================================================
@@ -112,10 +138,11 @@ IAtlasKernel kernel =
 ISpeechService speech =
     host.Services.GetRequiredService<ISpeechService>();
 
-// ======================================================
-// Startup
-// ======================================================
 Console.Clear();
+
+// Initialize Smart Home devices
+var smartHomeProvider = host.Services.GetRequiredService<Atlas.SmartHome.Interfaces.ISmartHomeProvider>();
+await smartHomeProvider.InitializeAsync();
 
 Console.WriteLine("==========================================");
 Console.WriteLine("               Atlas OS");

@@ -3,6 +3,9 @@ using Atlas.Core.Intent;
 using Atlas.Core.Planning;
 using Atlas.Tools.Services;
 using Atlas.Finance.Interfaces;
+using Atlas.SmartHome.Services;
+using Atlas.System.Services;
+using Atlas.Vision.Services;
 
 namespace Atlas.Core.Services;
 
@@ -15,6 +18,9 @@ public class AtlasKernel : IAtlasKernel
     private readonly IntentEngine _intent;
     private readonly ThinkingEngine _thinking;
     private readonly IFinanceEngine _finance;
+    private readonly SmartHomeEngine _smartHome;
+    private readonly AppLauncherEngine _appLauncher;
+    private readonly VisionEngine _vision;
 
     public AtlasKernel(
         IConversationService conversation,
@@ -23,7 +29,10 @@ public class AtlasKernel : IAtlasKernel
         IPlannerEngine planner,
         IntentEngine intent,
         ThinkingEngine thinking,
-        IFinanceEngine finance)
+        IFinanceEngine finance,
+        SmartHomeEngine smartHome,
+        AppLauncherEngine appLauncher,
+        VisionEngine vision)
     {
         _conversation = conversation;
         _dispatcher = dispatcher;
@@ -32,6 +41,9 @@ public class AtlasKernel : IAtlasKernel
         _intent = intent;
         _thinking = thinking;
         _finance = finance;
+        _smartHome = smartHome;
+        _appLauncher = appLauncher;
+        _vision = vision;
     }
 
     public async Task<string> ProcessAsync(string input)
@@ -54,6 +66,15 @@ public class AtlasKernel : IAtlasKernel
 
         switch (thought.TargetEngine)
         {
+           case "SmartHome":
+                return await _smartHome.ProcessCommandAsync(input);
+
+           case "System":
+                return await _appLauncher.ProcessCommandAsync(input);
+
+           case "Vision":
+                return await _vision.ProcessCommandAsync(input);
+
            case "Finance":
 
     string context =
