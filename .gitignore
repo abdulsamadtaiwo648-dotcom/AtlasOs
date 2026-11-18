@@ -494,7 +494,7 @@ obj/
 runtimes/
 
 # AI Models
-Models/
+/Models/
 
 # Logs
 *.log
