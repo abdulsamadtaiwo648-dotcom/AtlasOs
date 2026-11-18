@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using Atlas.AI.Models;
@@ -20,14 +21,49 @@ public class OllamaAIProvider : IAIProvider
         _httpClient.Timeout = TimeSpan.FromMinutes(10);
     }
 
-    public async Task<string> GetResponseAsync(List<Message> messages)
+    private const string TimeoutMessage = """
+Atlas could not get a response because the AI request timed out.
+
+Possible causes:
+
+• The local AI service is not running.
+• The model is still loading.
+• The model is too large for the computer.
+• The request exceeded the timeout.
+
+Try:
+
+ollama ps
+
+or
+
+ollama run gemma3:4b
+""";
+
+    private const string OfflineMessage = """
+Atlas AI engine is currently offline.
+
+The local AI service (Ollama) is not running on this machine.
+
+To fix this:
+
+  1. Download Ollama from https://ollama.com
+  2. Install and open Ollama
+  3. Open a terminal and run:
+
+       ollama run gemma3:4b
+
+  4. Wait for the model to load, then try again.
+
+Atlas smart home, finance, and system commands still work without Ollama.
+""";
+
+    private OllamaChatRequest BuildRequest(List<Message> messages, bool stream)
     {
-        try
-        {
             OllamaChatRequest request = new()
             {
                 Model = "gemma3:4b",
-                Stream = false,
+                Stream = stream,
                 Options = new Dictionary<string, object>
                 {
                     { "num_predict", 180 },
@@ -101,6 +137,82 @@ The current date and time is: {_clock.GetCurrentDateTime()}. Use this exact time
                 });
             }
 
+        return request;
+    }
+
+    public async IAsyncEnumerable<string> StreamResponseAsync(
+        List<Message> messages,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        OllamaChatRequest request = BuildRequest(messages, stream: true);
+
+        string json = JsonSerializer.Serialize(request);
+
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        using HttpRequestMessage http = new(HttpMethod.Post, "http://127.0.0.1:11434/api/chat")
+        {
+            Content = content
+        };
+
+        HttpResponseMessage? response = null;
+        Stream? body = null;
+        string? failure = null;
+
+        try
+        {
+            response = await _httpClient.SendAsync(
+                http, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            body = await response.Content.ReadAsStreamAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (TaskCanceledException)
+        {
+            failure = TimeoutMessage;
+        }
+        catch (HttpRequestException)
+        {
+            failure = OfflineMessage;
+        }
+        catch (Exception ex)
+        {
+            failure = $"Atlas encountered an unexpected error.\n\n{ex.Message}";
+        }
+
+        if (failure != null)
+        {
+            response?.Dispose();
+            yield return failure;
+            yield break;
+        }
+
+        using (response)
+        using (StreamReader reader = new(body!))
+        {
+            string? line;
+            while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                OllamaChatResponse? chunk = JsonSerializer.Deserialize<OllamaChatResponse>(line);
+                string? text = chunk?.Message?.Content;
+
+                if (!string.IsNullOrEmpty(text))
+                    yield return text;
+            }
+        }
+    }
+
+    public async Task<string> GetResponseAsync(List<Message> messages)
+    {
+        try
+        {
+            OllamaChatRequest request = BuildRequest(messages, stream: false);
+
             string json = JsonSerializer.Serialize(request);
 
             using StringContent content =
@@ -124,44 +236,11 @@ The current date and time is: {_clock.GetCurrentDateTime()}. Use this exact time
         }
         catch (TaskCanceledException)
         {
-            return """
-Atlas could not get a response because the AI request timed out.
-
-Possible causes:
-
-• The local AI service is not running.
-• The model is still loading.
-• The model is too large for the computer.
-• The request exceeded the timeout.
-
-Try:
-
-ollama ps
-
-or
-
-ollama run gemma3:4b
-""";
+            return TimeoutMessage;
         }
         catch (HttpRequestException)
         {
-            return """
-Atlas AI engine is currently offline.
-
-The local AI service (Ollama) is not running on this machine.
-
-To fix this:
-
-  1. Download Ollama from https://ollama.com
-  2. Install and open Ollama
-  3. Open a terminal and run:
-
-       ollama run gemma3:4b
-
-  4. Wait for the model to load, then try again.
-
-Atlas smart home, finance, and system commands still work without Ollama.
-""";
+            return OfflineMessage;
         }
         catch (Exception ex)
         {

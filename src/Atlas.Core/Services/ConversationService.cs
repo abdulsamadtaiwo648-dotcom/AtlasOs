@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using System.Text;
 using Atlas.Core.Enums;
 using Atlas.Core.Interfaces;
 using Atlas.Core.Models;
@@ -49,6 +51,47 @@ public class ConversationService : IConversationService
 
     return response;
 }
+    public async IAsyncEnumerable<string> StreamMessageAsync(
+        string input,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _conversation.Messages.Add(new Message
+        {
+            ConversationId = _conversation.Id,
+            Role = MessageRole.User,
+            Content = input,
+            Timestamp = DateTime.UtcNow
+        });
+
+        StringBuilder reply = new();
+
+        try
+        {
+            await foreach (string chunk in _ai.StreamResponseAsync(
+                _conversation.Messages, cancellationToken))
+            {
+                reply.Append(chunk);
+                yield return chunk;
+            }
+        }
+        finally
+        {
+            // Keep whatever was generated, even if the turn was interrupted.
+            if (reply.Length > 0)
+            {
+                _conversation.Messages.Add(new Message
+                {
+                    ConversationId = _conversation.Id,
+                    Role = MessageRole.Assistant,
+                    Content = reply.ToString(),
+                    Timestamp = DateTime.UtcNow
+                });
+
+                _store.Save(_conversation);
+            }
+        }
+    }
+
     public Conversation GetConversation()
     {
         return _conversation;

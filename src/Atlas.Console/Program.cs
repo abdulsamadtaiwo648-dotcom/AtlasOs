@@ -9,6 +9,8 @@ using Atlas.Speech.Interfaces;
 using Atlas.Speech.Services;
 using Atlas.Speech.SherpaSTT;
 using Atlas.Speech.SherpaTTS;
+using Atlas.Speech.Loop;
+using Atlas.Speech.WakeWord;
 using Atlas.Tools.Interfaces;
 using Atlas.Finance.Interfaces;
 using Atlas.Finance.Engines;
@@ -108,6 +110,7 @@ builder.Services.AddSingleton<SherpaRecognizer>();
 builder.Services.AddSingleton<SherpaSpeaker>();
 
 builder.Services.AddSingleton<ISpeechService, SpeechService>();
+builder.Services.AddSingleton<WakeWordDetector>();
 // ======================================================
 // Kernel
 // ======================================================
@@ -157,7 +160,7 @@ Console.WriteLine();
 while (true)
 {
     Console.WriteLine("------------------------------------------");
-    Console.WriteLine("Press ENTER to speak or type a message.");
+    Console.WriteLine("Press ENTER to speak once, type \"voice\" for hands-free mode, or type a message.");
     Console.Write("You: ");
 
     string input = Console.ReadLine() ?? "";
@@ -170,6 +173,36 @@ while (true)
         Console.WriteLine();
         Console.WriteLine("Atlas: Goodbye!");
         break;
+    }
+
+    // ======================================
+    // Hands-free voice loop ("voice")
+    // ======================================
+    if (input.Equals("voice", StringComparison.OrdinalIgnoreCase))
+    {
+        WakeWordDetector wakeWord = host.Services.GetRequiredService<WakeWordDetector>();
+
+        VoiceLoop loop = new(
+            new WakeWordSource(wakeWord),
+            new RecognizerListener(host.Services.GetRequiredService<SherpaRecognizer>()),
+            new SherpaSpeakerAdapter(host.Services.GetRequiredService<SherpaSpeaker>()),
+            (text, ct) => kernel.ProcessStreamAsync(text, ct));
+
+        loop.StateChanged += state => Console.WriteLine($"[voice] {state}");
+        loop.Heard += heard => Console.WriteLine($"You: {heard}");
+        loop.Said += said => Console.WriteLine($"Atlas: {said}");
+        loop.Error += ex => Console.WriteLine($"[voice] error: {ex.Message}");
+
+        using CancellationTokenSource cts = new();
+        ConsoleCancelEventHandler onCancel = (_, e) => { e.Cancel = true; cts.Cancel(); };
+        Console.CancelKeyPress += onCancel;
+
+        Console.WriteLine("Voice mode on. Say the wake word, then speak. Say \"stop listening\" or press Ctrl+C to leave.");
+        await loop.RunAsync(cts.Token);
+
+        Console.CancelKeyPress -= onCancel;
+        Console.WriteLine("Voice mode off.");
+        continue;
     }
 
     // ======================================
