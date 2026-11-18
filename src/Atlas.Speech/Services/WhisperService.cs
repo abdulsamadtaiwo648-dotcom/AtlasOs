@@ -5,11 +5,9 @@ namespace Atlas.Speech.Services;
 
 public class WhisperService
 {
-    private const string WhisperExe =
-        @"C:\Users\HP\AtLasOS\runtimes\whisper.cpp\build\bin\Release\whisper-cli.exe";
+    private static string WhisperExe => SpeechPaths.WhisperExe;
 
-    private const string WhisperModel =
-        @"C:\Users\HP\AtLasOS\runtimes\whisper.cpp\models\ggml-base.en.bin";
+    private static string WhisperModel => SpeechPaths.WhisperModel;
 
     public async Task<string> TranscribeAsync(string audioFile)
     {

@@ -10,8 +10,8 @@ namespace Atlas.Speech.SherpaSTT;
 public class SherpaRecognizer
 {
     // ── Model paths ────────────────────────────────────────────────────────────
-    private const string ModelFile  = @"C:\Users\HP\AtLasOS\Models\Speech\STT\sherpa-onnx-sense-voice-en\model.onnx";
-    private const string TokensFile = @"C:\Users\HP\AtLasOS\Models\Speech\STT\sherpa-onnx-sense-voice-en\tokens.txt";
+    private static string ModelFile  => SpeechPaths.SenseVoiceModel;
+    private static string TokensFile => SpeechPaths.SenseVoiceTokens;
 
     private const int   SampleRate      = 16000;
     private const int   SilenceMs       = 750;
@@ -139,8 +139,8 @@ public class SherpaRecognizer
     // ── Whisper fallback ───────────────────────────────────────────────────────
     private static string TranscribeWhisperFallback(float[] samples)
     {
-        const string exe   = @"C:\Users\HP\AtLasOS\runtimes\whisper.cpp\build\bin\Release\whisper-cli.exe";
-        const string model = @"C:\Users\HP\AtLasOS\runtimes\whisper.cpp\models\ggml-base.en.bin";
+        string exe   = SpeechPaths.WhisperExe;
+        string model = SpeechPaths.WhisperModel;
         if (!File.Exists(exe)) return "";
 
         string tmpFile = Path.Combine(Path.GetTempPath(), $"atlas_stt_{Guid.NewGuid():N}.wav");
