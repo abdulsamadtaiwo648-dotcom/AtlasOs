@@ -10,10 +10,10 @@ namespace Atlas.Speech.SherpaTTS;
 public class SherpaSpeaker
 {
     // ── Model paths ────────────────────────────────────────────────────
-    private const string ModelDir   = @"C:\Users\HP\AtLasOS\Models\Speech\TTS\vits-piper-en_US-amy-low";
-    private const string ModelFile   = ModelDir + @"\en_US-amy-low.onnx";
-    private const string DataDir     = ModelDir + @"\espeak-ng-data";
-    private const string TokensFile  = ModelDir + @"\tokens.txt";
+    private static string ModelDir   => SpeechPaths.TtsDir;
+    private static string ModelFile   => ModelDir + @"\en_US-amy-low.onnx";
+    private static string DataDir     => ModelDir + @"\espeak-ng-data";
+    private static string TokensFile  => ModelDir + @"\tokens.txt";
 
     private OfflineTts? _tts;
     private readonly object _lock = new();

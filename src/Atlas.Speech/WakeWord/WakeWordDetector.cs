@@ -11,12 +11,12 @@ namespace Atlas.Speech.WakeWord;
 public sealed class WakeWordDetector : IDisposable
 {
     // ── Model paths ────────────────────────────────────────────────────────
-    private const string ModelDir  = @"C:\Users\HP\AtLasOS\Models\Speech\WakeWord\sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01";
-    private const string Encoder   = ModelDir + @"\encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
-    private const string Decoder   = ModelDir + @"\decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
-    private const string Joiner    = ModelDir + @"\joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
-    private const string TokensPath   = ModelDir + @"\tokens.txt";
-    private const string KeywordsPath = ModelDir + @"\atlas_keywords.txt";
+    private static string ModelDir => SpeechPaths.WakeWordDir;
+    private static string Encoder   => ModelDir + @"\encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
+    private static string Decoder   => ModelDir + @"\decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
+    private static string Joiner    => ModelDir + @"\joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx";
+    private static string TokensPath   => ModelDir + @"\tokens.txt";
+    private static string KeywordsPath => ModelDir + @"\atlas_keywords.txt";
 
     private const int SampleRate  = 16000;
     private const int ChunkSizeMs = 100; // process 100 ms chunks

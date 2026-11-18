@@ -14,4 +14,7 @@
     <Project Path="src/Atlas.UI/Atlas.UI.csproj" />
     <Project Path="src/Atlas.Vision/Atlas.Vision.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Atlas.Tests/Atlas.Tests.csproj" />
+  </Folder>
 </Solution>
