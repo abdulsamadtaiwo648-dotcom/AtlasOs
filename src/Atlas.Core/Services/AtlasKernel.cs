@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Atlas.Core.Interfaces;
 using Atlas.Core.Intent;
 using Atlas.Core.Planning;
@@ -48,13 +49,40 @@ public class AtlasKernel : IAtlasKernel
 
     public async Task<string> ProcessAsync(string input)
     {
+        (string? text, string? chatPrompt) = await ResolveAsync(input);
+
+        return text ?? await _conversation.SendMessageAsync(chatPrompt!);
+    }
+
+    public async IAsyncEnumerable<string> ProcessStreamAsync(
+        string input,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        (string? text, string? chatPrompt) = await ResolveAsync(input);
+
+        if (text != null)
+        {
+            yield return text;
+            yield break;
+        }
+
+        await foreach (string chunk in _conversation.StreamMessageAsync(chatPrompt!, cancellationToken))
+            yield return chunk;
+    }
+
+    /// <summary>
+    /// Decides how to handle the input. Returns either a finished reply (text)
+    /// or a prompt that should be sent to the AI conversation (chatPrompt).
+    /// </summary>
+    private async Task<(string? text, string? chatPrompt)> ResolveAsync(string input)
+    {
         // Commands
         if (_dispatcher.TryExecute(input, out string command))
-            return command;
+            return (command, null);
 
         // Simple tools
         if (_toolManager.TryExecute(input, out string tool))
-            return tool;
+            return (tool, null);
 
         // Think
         IntentResult intent = _intent.Detect(input);
@@ -66,21 +94,21 @@ public class AtlasKernel : IAtlasKernel
 
         switch (thought.TargetEngine)
         {
-           case "SmartHome":
-                return await _smartHome.ProcessCommandAsync(input);
+            case "SmartHome":
+                return (await _smartHome.ProcessCommandAsync(input), null);
 
-           case "System":
-                return await _appLauncher.ProcessCommandAsync(input);
+            case "System":
+                return (await _appLauncher.ProcessCommandAsync(input), null);
 
-           case "Vision":
-                return await _vision.ProcessCommandAsync(input);
+            case "Vision":
+                return (await _vision.ProcessCommandAsync(input), null);
 
-           case "Finance":
+            case "Finance":
+            {
+                string context =
+                    await _finance.BuildContextAsync(input);
 
-    string context =
-        await _finance.BuildContextAsync(input);
-
-    string prompt =
+                string prompt =
 $"""
 The user asked:
 
@@ -105,18 +133,20 @@ Explain:
 Use only the supplied market data.
 """;
 
-    return await _conversation.SendMessageAsync(prompt);
+                return (null, prompt);
+            }
+
             case "Calculator":
                 if (_toolManager.TryExecute(input, out string calculator))
-                    return calculator;
+                    return (calculator, null);
 
-                return "Calculator could not process the request.";
+                return ("Calculator could not process the request.", null);
 
             case "Conversation":
-                return await _conversation.SendMessageAsync(input);
+                return (null, input);
 
             default:
-                return "I don't know how to handle that yet.";
+                return ("I don't know how to handle that yet.", null);
         }
     }
 }

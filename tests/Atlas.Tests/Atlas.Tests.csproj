@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\src\Atlas.Finance\Atlas.Finance.csproj" />
     <ProjectReference Include="..\..\src\Atlas.SmartHome\Atlas.SmartHome.csproj" />
     <ProjectReference Include="..\..\src\Atlas.Tools\Atlas.Tools.csproj" />
+    <ProjectReference Include="..\..\src\Atlas.Speech\Atlas.Speech.csproj" />
   </ItemGroup>
 
 </Project>
