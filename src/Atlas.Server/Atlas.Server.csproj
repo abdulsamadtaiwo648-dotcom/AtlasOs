@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <!-- Lets your phone use Atlas over Wi-Fi: a small, password-protected web server plus a phone-friendly page. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Atlas.Server</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ship the phone page next to the program so it is found no matter where the server is started from. -->
+    <Content Update="wwwroot\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Atlas.Core\Atlas.Core.csproj" />
+    <ProjectReference Include="..\Atlas.Memory\Atlas.Memory.csproj" />
+    <ProjectReference Include="..\Atlas.Hosting\Atlas.Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

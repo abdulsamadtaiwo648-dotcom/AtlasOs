@@ -271,17 +271,7 @@ public sealed class ChatViewModel : ObservableObject
         Title = TitleOf(_conversation.GetConversation());
     }
 
-    internal static string TitleOf(Conversation conversation)
-    {
-        string? first = conversation.Messages
-            .FirstOrDefault(m => m.Role == MessageRole.User)?.Content.Trim();
-
-        if (string.IsNullOrEmpty(first))
-            return "New chat";
-
-        first = first.ReplaceLineEndings(" ");
-        return first.Length <= 40 ? first : first[..37].TrimEnd() + "...";
-    }
+    internal static string TitleOf(Conversation conversation) => conversation.Title();
 
     private void ShowError(string message)
     {

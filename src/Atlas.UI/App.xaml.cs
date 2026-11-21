@@ -2,6 +2,7 @@ using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Atlas.Hosting;
 using Atlas.AI.Providers;
 using Atlas.Core.Commands;
 using Atlas.Core.Interfaces;
@@ -32,62 +33,8 @@ public partial class App : Application
     {
         HostApplicationBuilder builder = Host.CreateApplicationBuilder();
 
-        // Http Client
-        builder.Services.AddHttpClient();
-        
-        // Finance
-        builder.Services.AddSingleton<IFinanceProvider, YahooFinanceProvider>();
-        builder.Services.AddSingleton<IMarketEngine, MarketEngine>();
-        builder.Services.AddSingleton<IEconomyEngine, EconomyEngine>();
-        builder.Services.AddSingleton<IFinanceEngine, FinanceEngine>();
-        builder.Services.AddSingleton<FinanceContextBuilder>();
-
-        // Smart Home
-        builder.Services.AddSingleton<Atlas.SmartHome.Interfaces.ISmartHomeProvider, Atlas.SmartHome.Providers.SimulationProvider.SimulationProvider>();
-        builder.Services.AddSingleton<Atlas.SmartHome.Services.SmartHomeEngine>();
-
-        // System (App Launcher)
-        builder.Services.AddSingleton<Atlas.System.Interfaces.IAppLauncher, Atlas.System.Providers.WindowsAppLauncher>();
-        builder.Services.AddSingleton<Atlas.System.Services.AppLauncherEngine>();
-
-        // Vision
-        builder.Services.AddSingleton<Atlas.Vision.Interfaces.IVisionProvider, Atlas.Vision.Providers.SimulationVisionProvider>();
-        builder.Services.AddSingleton<Atlas.Vision.Services.VisionEngine>();
-
-        builder.Services.AddSingleton<ContextBuilder>();
-
-        // Analysis
-        builder.Services.AddSingleton<RiskAnalyzer>();
-        builder.Services.AddSingleton<PortfolioAnalyzer>();
-        builder.Services.AddSingleton<TechnicalAnalyzer>();
-        builder.Services.AddSingleton<InvestmentAnalyzer>();
-        builder.Services.AddSingleton<ChartEngine>();
-
-        // AI
-        builder.Services.AddSingleton<IAIProvider, OllamaAIProvider>();
-
-        // Storage
-        builder.Services.AddSingleton<IConversationStore, JsonConversationStore>();
-        builder.Services.AddSingleton<Atlas.Core.Interfaces.IMemoryService>(_ => new Atlas.Memory.SqliteMemoryService());
-
-        // Planner
-        builder.Services.AddSingleton<IPlannerEngine, PlannerEngine>();
-
-        // Conversation
-        builder.Services.AddSingleton<IConversationService, ConversationService>();
-
-        // Commands
-        builder.Services.AddSingleton<ICommand, HelpCommand>();
-        builder.Services.AddSingleton<ICommand, HistoryCommand>();
-        builder.Services.AddSingleton<ICommand, NewCommand>();
-        builder.Services.AddSingleton<ICommand, DeleteCommand>();
-        builder.Services.AddSingleton<ICommand, Atlas.Core.Commands.MemoryCommand>();
-        builder.Services.AddSingleton<ICommand, Atlas.Core.Commands.ForgetCommand>();
-        builder.Services.AddSingleton<CommandDispatcher>();
-
-        // Tools
-        builder.Services.AddSingleton<ITool, CalculatorTool>();
-        builder.Services.AddSingleton<ToolManager>();
+        // Atlas brain (AI, memory, settings, engines, kernel)
+        builder.Services.AddAtlasCore();
 
         // Speech
         builder.Services.AddSingleton<AudioRecorder>();
@@ -96,19 +43,7 @@ public partial class App : Application
         builder.Services.AddSingleton<SherpaSpeaker>();
         builder.Services.AddSingleton<ISpeechService, SpeechService>();
 
-        // Kernel
-        builder.Services.AddSingleton<IAtlasKernel, AtlasKernel>();
-        builder.Services.AddSingleton<IntentEngine>();
-        builder.Services.AddSingleton<ThinkingEngine>();
-
-        // Clock
-        builder.Services.AddSingleton<IClockEngine, ClockEngine>();
-        builder.Services.AddSingleton<CalendarEngine>();
-        builder.Services.AddSingleton<TimeZoneEngine>();
-        builder.Services.AddSingleton<WorldClockEngine>();
-
         // Settings, memory and speech glue
-        builder.Services.AddSingleton<Atlas.Core.Settings.ISettingsService>(_ => new Atlas.Core.Settings.JsonSettingsService());
         builder.Services.AddSingleton<WakeWordDetector>();
         builder.Services.AddSingleton(sp => new Atlas.Speech.Loop.TriggerableWakeSource(
             new Atlas.Speech.Loop.WakeWordSource(sp.GetRequiredService<WakeWordDetector>())));
@@ -140,8 +75,7 @@ public partial class App : Application
         await _host.StartAsync();
 
         // Initialize Smart Home
-        var smartHomeProvider = _host.Services.GetRequiredService<Atlas.SmartHome.Interfaces.ISmartHomeProvider>();
-        await smartHomeProvider.InitializeAsync();
+        await _host.Services.InitializeAtlasAsync();
 
         var mainWindow = _host.Services.GetRequiredService<MainWindow>();
         mainWindow.Show();

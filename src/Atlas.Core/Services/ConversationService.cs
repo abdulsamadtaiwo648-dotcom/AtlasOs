@@ -143,6 +143,29 @@ public class ConversationService : IConversationService
         return prompt;
     }
 
+    public void RecordExchange(string userText, string reply)
+    {
+        DateTime now = DateTime.UtcNow;
+
+        _conversation.Messages.Add(new Message
+        {
+            ConversationId = _conversation.Id,
+            Role = MessageRole.User,
+            Content = userText,
+            Timestamp = now
+        });
+
+        _conversation.Messages.Add(new Message
+        {
+            ConversationId = _conversation.Id,
+            Role = MessageRole.Assistant,
+            Content = reply,
+            Timestamp = now
+        });
+
+        _store.Save(_conversation);
+    }
+
     public Conversation StartNew()
     {
         _conversation = _store.Create();

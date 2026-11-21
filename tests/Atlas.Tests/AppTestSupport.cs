@@ -23,11 +23,20 @@ internal sealed class ScriptedAi : IAIProvider
     public string[] Chunks = { "Hello", " there. ", "How can I help you today?" };
     public TimeSpan Delay = TimeSpan.Zero;
 
-    public Task<string> GetResponseAsync(List<Message> messages) => Task.FromResult(string.Concat(Chunks));
+    /// <summary>Everything in the most recent prompt, joined, so tests can check what the model was told.</summary>
+    public string LastPromptText { get; private set; } = "";
+
+    public Task<string> GetResponseAsync(List<Message> messages)
+    {
+        LastPromptText = string.Join("\n", messages.Select(m => m.Content));
+        return Task.FromResult(string.Concat(Chunks));
+    }
 
     public async IAsyncEnumerable<string> StreamResponseAsync(
         List<Message> messages, [EnumeratorCancellation] CancellationToken ct = default)
     {
+        LastPromptText = string.Join("\n", messages.Select(m => m.Content));
+
         foreach (string chunk in Chunks)
         {
             if (Delay > TimeSpan.Zero)

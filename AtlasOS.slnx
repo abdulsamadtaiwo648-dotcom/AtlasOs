@@ -1,12 +1,15 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Atlas.AI/Atlas.AI.csproj" />
+    <Project Path="src/Atlas.App/Atlas.App.csproj" />
     <Project Path="src/Atlas.Capabilities/Atlas.Capabilities.csproj" />
     <Project Path="src/Atlas.Console/Atlas.Console.csproj" />
     <Project Path="src/Atlas.Core/Atlas.Core.csproj" />
     <Project Path="src/Atlas.Finance/Atlas.Finance.csproj" />
+    <Project Path="src/Atlas.Hosting/Atlas.Hosting.csproj" />
     <Project Path="src/Atlas.Math/Atlas.Math.csproj" />
     <Project Path="src/Atlas.Memory/Atlas.Memory.csproj" />
+    <Project Path="src/Atlas.Server/Atlas.Server.csproj" />
     <Project Path="src/Atlas.SmartHome/Atlas.SmartHome.csproj" />
     <Project Path="src/Atlas.Speech/Atlas.Speech.csproj" />
     <Project Path="src/Atlas.System/Atlas.System.csproj" />
