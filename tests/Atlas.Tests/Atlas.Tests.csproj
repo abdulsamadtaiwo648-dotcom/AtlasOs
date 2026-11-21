@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
@@ -26,6 +27,8 @@
     <ProjectReference Include="..\..\src\Atlas.Speech\Atlas.Speech.csproj" />
     <ProjectReference Include="..\..\src\Atlas.Memory\Atlas.Memory.csproj" />
     <ProjectReference Include="..\..\src\Atlas.App\Atlas.App.csproj" />
+    <ProjectReference Include="..\..\src\Atlas.Server\Atlas.Server.csproj" />
+    <ProjectReference Include="..\..\src\Atlas.Hosting\Atlas.Hosting.csproj" />
   </ItemGroup>
 
 </Project>

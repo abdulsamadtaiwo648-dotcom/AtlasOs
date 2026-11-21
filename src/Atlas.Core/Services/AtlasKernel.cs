@@ -55,7 +55,13 @@ public class AtlasKernel : IAtlasKernel
     {
         (string? text, string? chatPrompt) = await ResolveAsync(input);
 
-        return text ?? await _conversation.SendMessageAsync(chatPrompt!);
+        if (text != null)
+        {
+            Remember(input, text);
+            return text;
+        }
+
+        return await _conversation.SendMessageAsync(chatPrompt!);
     }
 
     public async IAsyncEnumerable<string> ProcessStreamAsync(
@@ -66,12 +72,22 @@ public class AtlasKernel : IAtlasKernel
 
         if (text != null)
         {
+            Remember(input, text);
             yield return text;
             yield break;
         }
 
         await foreach (string chunk in _conversation.StreamMessageAsync(chatPrompt!, cancellationToken))
             yield return chunk;
+    }
+
+    /// <summary>Keeps answers Atlas gave itself in the chat history (slash commands are left out).</summary>
+    private void Remember(string input, string reply)
+    {
+        if (input.TrimStart().StartsWith('/'))
+            return;
+
+        _conversation.RecordExchange(input, reply);
     }
 
     /// <summary>
