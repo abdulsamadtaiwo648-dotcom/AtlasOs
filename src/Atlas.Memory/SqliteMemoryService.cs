@@ -175,6 +175,17 @@ public sealed class SqliteMemoryService : IMemoryService
         return GetOn(connection, id);
     }
 
+    public bool SetImportance(long id, int importance)
+    {
+        using SqliteConnection connection = Open();
+        using SqliteCommand command = connection.CreateCommand();
+        command.CommandText = "UPDATE memories SET importance = $imp, updated_at = $now WHERE id = $id";
+        command.Parameters.AddWithValue("$imp", Math.Clamp(importance, 1, 5));
+        command.Parameters.AddWithValue("$now", ToDb(DateTime.UtcNow));
+        command.Parameters.AddWithValue("$id", id);
+        return command.ExecuteNonQuery() > 0;
+    }
+
     public bool Forget(long id)
     {
         using SqliteConnection connection = Open();

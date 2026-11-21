@@ -13,7 +13,7 @@ public class ConversationService : IConversationService
 
     private readonly IMemoryService? _memory;
 
-    private readonly Conversation _conversation;
+    private Conversation _conversation;
 
     public ConversationService(
         IAIProvider ai,
@@ -141,6 +141,22 @@ public class ConversationService : IConversationService
         List<Message> prompt = new() { note };
         prompt.AddRange(_conversation.Messages);
         return prompt;
+    }
+
+    public Conversation StartNew()
+    {
+        _conversation = _store.Create();
+        return _conversation;
+    }
+
+    public bool Load(Guid id)
+    {
+        Conversation? loaded = _store.Load(id);
+        if (loaded == null)
+            return false;
+
+        _conversation = loaded;
+        return true;
     }
 
     public Conversation GetConversation()

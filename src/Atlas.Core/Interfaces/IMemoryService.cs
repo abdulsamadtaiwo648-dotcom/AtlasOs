@@ -24,6 +24,9 @@ public interface IMemoryService
 
     MemoryEntry? Get(long id);
 
+    /// <summary>Sets how important a memory is (1-5). 5 means "always keep in mind".</summary>
+    bool SetImportance(long id, int importance);
+
     bool Forget(long id);
 
     int Count();

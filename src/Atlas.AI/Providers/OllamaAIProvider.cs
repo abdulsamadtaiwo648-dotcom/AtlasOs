@@ -6,6 +6,7 @@ using Atlas.Core.Enums;
 using Atlas.Core.Interfaces;
 using Atlas.Core.Models;
 using Atlas.Core.Clock;
+using Atlas.Core.Settings;
 
 namespace Atlas.AI.Providers;
 
@@ -13,11 +14,13 @@ public class OllamaAIProvider : IAIProvider
 {
     private readonly HttpClient _httpClient;
     private readonly IClockEngine _clock;
+    private readonly ISettingsService? _settings;
 
-    public OllamaAIProvider(HttpClient httpClient, IClockEngine clock)
+    public OllamaAIProvider(HttpClient httpClient, IClockEngine clock, ISettingsService? settings = null)
     {
         _httpClient = httpClient;
         _clock = clock;
+        _settings = settings;
         _httpClient.Timeout = TimeSpan.FromMinutes(10);
     }
 
@@ -58,11 +61,14 @@ To fix this:
 Atlas smart home, finance, and system commands still work without Ollama.
 """;
 
+    private string ChatUrl =>
+        (_settings?.Current.OllamaUrl ?? "http://127.0.0.1:11434").TrimEnd('/') + "/api/chat";
+
     private OllamaChatRequest BuildRequest(List<Message> messages, bool stream)
     {
             OllamaChatRequest request = new()
             {
-                Model = "gemma3:4b",
+                Model = _settings?.Current.Model ?? "gemma3:4b",
                 Stream = stream,
                 Options = new Dictionary<string, object>
                 {
@@ -149,7 +155,7 @@ The current date and time is: {_clock.GetCurrentDateTime()}. Use this exact time
         string json = JsonSerializer.Serialize(request);
 
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        using HttpRequestMessage http = new(HttpMethod.Post, "http://127.0.0.1:11434/api/chat")
+        using HttpRequestMessage http = new(HttpMethod.Post, ChatUrl)
         {
             Content = content
         };
@@ -220,7 +226,7 @@ The current date and time is: {_clock.GetCurrentDateTime()}. Use this exact time
 
             HttpResponseMessage response =
                await _httpClient.PostAsync(
-                "http://127.0.0.1:11434/api/chat",
+                ChatUrl,
             content);
 
             response.EnsureSuccessStatusCode();

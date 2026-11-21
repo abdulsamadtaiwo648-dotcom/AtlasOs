@@ -31,6 +31,26 @@ public static class SpeechPaths
         Environment.GetEnvironmentVariable("ATLAS_WHISPER_MODEL")
         ?? Path.Combine(Root, "runtimes", "whisper.cpp", "models", "ggml-base.en.bin");
 
+    /// <summary>
+    /// Model files the voice features need that are not on disk yet. Empty means voice is ready.
+    /// </summary>
+    public static IReadOnlyList<string> MissingModelFiles()
+    {
+        string[] required =
+        {
+            SenseVoiceModel,
+            SenseVoiceTokens,
+            Path.Combine(TtsDir, "en_US-amy-low.onnx"),
+            Path.Combine(WakeWordDir, "encoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx"),
+            Path.Combine(WakeWordDir, "decoder-epoch-12-avg-2-chunk-16-left-64.int8.onnx"),
+            Path.Combine(WakeWordDir, "joiner-epoch-12-avg-2-chunk-16-left-64.int8.onnx"),
+            Path.Combine(WakeWordDir, "tokens.txt"),
+            Path.Combine(WakeWordDir, "atlas_keywords.txt")
+        };
+
+        return required.Where(f => !File.Exists(f)).ToList();
+    }
+
     private static string ResolveRoot()
     {
         string? env = Environment.GetEnvironmentVariable("ATLAS_HOME");
