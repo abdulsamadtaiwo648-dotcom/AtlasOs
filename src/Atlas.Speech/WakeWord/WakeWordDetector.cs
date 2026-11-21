@@ -47,7 +47,8 @@ public sealed class WakeWordDetector : IDisposable
 
         try
         {
-            _spotter = CreateSpotter();
+            _spotter ??= CreateSpotter();
+            _stream?.Dispose();
             _stream  = _spotter.CreateStream();
             _running = true;
             StartMic();
@@ -63,7 +64,18 @@ public sealed class WakeWordDetector : IDisposable
     public void Stop()
     {
         _running = false;
-        _mic?.StopRecording();
+
+        WaveInEvent? mic = _mic;
+        _mic = null;
+
+        if (mic == null)
+            return;
+
+        mic.DataAvailable    -= OnAudioData;
+        mic.RecordingStopped -= OnRecordingStopped;
+
+        try { mic.StopRecording(); } catch (Exception) { /* already stopped */ }
+        mic.Dispose();
     }
 
     public void Dispose()
@@ -73,7 +85,6 @@ public sealed class WakeWordDetector : IDisposable
         Stop();
         _stream?.Dispose();
         _spotter?.Dispose();
-        _mic?.Dispose();
     }
 
     // ── Microphone capture ─────────────────────────────────────────────────

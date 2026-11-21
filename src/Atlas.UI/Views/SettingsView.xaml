@@ -1,0 +1,89 @@
+<UserControl x:Class="AtlasUI.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:AtlasUI">
+
+    <UserControl.Resources>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,12,0,5"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,22,32,28" MaxWidth="760" HorizontalAlignment="Stretch">
+            <TextBlock Text="Settings" Style="{StaticResource PageTitle}" Margin="0,0,0,2"/>
+            <TextBlock Text="Changes are saved as you make them." Style="{StaticResource Muted}" Margin="0,0,0,18"/>
+
+            <!-- ===== AI model ===== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="AI model" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource Muted}"
+                               Text="Atlas talks to Ollama. Use the local address for models on this PC, or another Ollama server."/>
+
+                    <TextBlock Text="Ollama address" Style="{StaticResource Label}"/>
+                    <TextBox Style="{StaticResource FieldBox}" Text="{Binding OllamaUrl}"/>
+
+                    <TextBlock Text="Model" Style="{StaticResource Label}"/>
+                    <ComboBox IsEditable="True" ItemsSource="{Binding AvailableModels}" Text="{Binding Model}"
+                              FontSize="14" Padding="8,7"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <Button Content="Check connection" Style="{StaticResource SoftButton}"
+                                Command="{Binding CheckConnectionCommand}"/>
+                        <TextBlock Text="{Binding ConnectionStatus}" Style="{StaticResource Muted}"
+                                   VerticalAlignment="Center" Margin="14,0,0,0" MaxWidth="460"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Voice ===== -->
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Voice" Style="{StaticResource SectionTitle}"/>
+
+                    <CheckBox Content="Speak replies out loud when I type" IsChecked="{Binding SpeakReplies}"
+                              Margin="0,0,0,10"/>
+                    <CheckBox Content="Turn on hands-free listening when Atlas opens" IsChecked="{Binding StartHandsFree}"/>
+
+                    <TextBlock Text="Speaking speed" Style="{StaticResource Label}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="56"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider Minimum="0.5" Maximum="2" TickFrequency="0.1" IsSnapToTickEnabled="True"
+                                Value="{Binding SpeechSpeed}" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding SpeechSpeedText}" HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <TextBlock Text="{Binding SpeechStatus}" Style="{StaticResource Muted}" Margin="0,14,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ===== Where things are stored ===== -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Where things are stored" Style="{StaticResource SectionTitle}"/>
+
+                    <TextBlock Text="Memory database" Style="{StaticResource Label}" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding MemoryDatabase, Mode=OneWay}" Style="{StaticResource SelectableText}"
+                             FontSize="12.5" Foreground="{StaticResource MutedBrush}"/>
+
+                    <TextBlock Text="Settings file" Style="{StaticResource Label}" Margin="0,12,0,3"/>
+                    <TextBox Text="{Binding SettingsFile, Mode=OneWay}" Style="{StaticResource SelectableText}"
+                             FontSize="12.5" Foreground="{StaticResource MutedBrush}"/>
+
+                    <TextBlock Text="Voice models folder" Style="{StaticResource Label}" Margin="0,12,0,3"/>
+                    <TextBox Text="{Binding SpeechFolder, Mode=OneWay}" Style="{StaticResource SelectableText}"
+                             FontSize="12.5" Foreground="{StaticResource MutedBrush}"/>
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,6,0,0"
+                               Text="To use a different folder, set the ATLAS_HOME environment variable and restart Atlas."/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

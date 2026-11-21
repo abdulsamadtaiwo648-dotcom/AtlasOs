@@ -2,6 +2,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Atlas.Core\Atlas.Core.csproj" />
+    <ProjectReference Include="..\Atlas.Memory\Atlas.Memory.csproj" />
+    <ProjectReference Include="..\Atlas.App\Atlas.App.csproj" />
     <ProjectReference Include="..\Atlas.AI\Atlas.AI.csproj" />
     <ProjectReference Include="..\Atlas.Finance\Atlas.Finance.csproj" />
     <ProjectReference Include="..\Atlas.System\Atlas.System.csproj" />

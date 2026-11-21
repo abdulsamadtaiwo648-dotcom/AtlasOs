@@ -28,6 +28,9 @@ public sealed class WakeWordSource : IWakeSource
         finally
         {
             _detector.WakeWordDetected -= OnWake;
+
+            // Release the microphone so the recognizer can use it for the actual request.
+            _detector.Stop();
         }
     }
 }
@@ -48,12 +51,14 @@ public sealed class RecognizerListener : IListener
 public sealed class SherpaSpeakerAdapter : ISpeaker
 {
     private readonly SherpaSpeaker _speaker;
+    private readonly Func<float>? _speed;
 
-    public SherpaSpeakerAdapter(SherpaSpeaker speaker)
+    public SherpaSpeakerAdapter(SherpaSpeaker speaker, Func<float>? speed = null)
     {
         _speaker = speaker;
+        _speed = speed;
     }
 
     public Task SpeakAsync(string text, CancellationToken cancellationToken)
-        => _speaker.SpeakAsync(text).WaitAsync(cancellationToken);
+        => _speaker.SpeakAsync(text, _speed?.Invoke() ?? 1.0f).WaitAsync(cancellationToken);
 }

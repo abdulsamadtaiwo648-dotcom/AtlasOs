@@ -69,6 +69,8 @@ builder.Services.AddSingleton<IFinanceEngine, FinanceEngine>();
 // Storage
 // ======================================================
 builder.Services.AddSingleton<IConversationStore, JsonConversationStore>();
+builder.Services.AddSingleton<Atlas.Core.Settings.ISettingsService>(_ => new Atlas.Core.Settings.JsonSettingsService());
+builder.Services.AddSingleton<Atlas.Core.Interfaces.IMemoryService>(_ => new Atlas.Memory.SqliteMemoryService());
 
 // ======================================================
 // Planner
@@ -87,6 +89,8 @@ builder.Services.AddSingleton<ICommand, HelpCommand>();
 builder.Services.AddSingleton<ICommand, HistoryCommand>();
 builder.Services.AddSingleton<ICommand, NewCommand>();
 builder.Services.AddSingleton<ICommand, DeleteCommand>();
+builder.Services.AddSingleton<ICommand, Atlas.Core.Commands.MemoryCommand>();
+builder.Services.AddSingleton<ICommand, Atlas.Core.Commands.ForgetCommand>();
 
 builder.Services.AddSingleton<CommandDispatcher>();
 
