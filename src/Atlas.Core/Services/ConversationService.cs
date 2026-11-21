@@ -11,14 +11,18 @@ public class ConversationService : IConversationService
     private readonly IAIProvider _ai;
     private readonly IConversationStore _store;
 
+    private readonly IMemoryService? _memory;
+
     private readonly Conversation _conversation;
 
     public ConversationService(
         IAIProvider ai,
-        IConversationStore store)
+        IConversationStore store,
+        IMemoryService? memory = null)
     {
         _ai = ai;
         _store = store;
+        _memory = memory;
 
         _conversation = _store.Create();
     }
@@ -35,7 +39,7 @@ public class ConversationService : IConversationService
 
     _conversation.Messages.Add(userMessage);
 
-    string response = await _ai.GetResponseAsync(_conversation.Messages);
+    string response = await _ai.GetResponseAsync(BuildPrompt(input));
 
     Message assistantMessage = new()
     {
@@ -68,7 +72,7 @@ public class ConversationService : IConversationService
         try
         {
             await foreach (string chunk in _ai.StreamResponseAsync(
-                _conversation.Messages, cancellationToken))
+                BuildPrompt(input), cancellationToken))
             {
                 reply.Append(chunk);
                 yield return chunk;
@@ -90,6 +94,53 @@ public class ConversationService : IConversationService
                 _store.Save(_conversation);
             }
         }
+    }
+
+    /// <summary>
+    /// The conversation so far, plus (for this request only) a note of the
+    /// memories relevant to what was just said. The note is never saved in the
+    /// conversation history.
+    /// </summary>
+    private List<Message> BuildPrompt(string input)
+    {
+        if (_memory == null)
+            return _conversation.Messages;
+
+        List<MemoryEntry> relevant = new();
+
+        try
+        {
+            relevant.AddRange(_memory.Pinned());
+
+            foreach (MemoryEntry entry in _memory.Search(input, 5))
+            {
+                if (relevant.All(r => r.Id != entry.Id))
+                    relevant.Add(entry);
+            }
+        }
+        catch (Exception)
+        {
+            // Memory is a bonus: if the database is unavailable, chat still works.
+            return _conversation.Messages;
+        }
+
+        if (relevant.Count == 0)
+            return _conversation.Messages;
+
+        Message note = new()
+        {
+            ConversationId = _conversation.Id,
+            Role = MessageRole.System,
+            Content =
+                "Things the user has told you to remember. Use them naturally when relevant; " +
+                "do not recite them or mention that you have a memory list:\n" +
+                string.Join("\n", relevant.Select(m => $"- {m.Content}"))
+        };
+
+        // The note goes first so the conversation (ending with the user's message) stays last.
+        List<Message> prompt = new() { note };
+        prompt.AddRange(_conversation.Messages);
+        return prompt;
     }
 
     public Conversation GetConversation()
