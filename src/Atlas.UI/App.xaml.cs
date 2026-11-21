@@ -107,10 +107,30 @@ public partial class App : Application
         builder.Services.AddSingleton<TimeZoneEngine>();
         builder.Services.AddSingleton<WorldClockEngine>();
 
-        // UI Window — MainWindow also gets SherpaRecognizer + WakeWordDetector
-        builder.Services.AddSingleton<MainWindow>();
-        builder.Services.AddSingleton<SherpaRecognizer>();
+        // Settings, memory and speech glue
+        builder.Services.AddSingleton<Atlas.Core.Settings.ISettingsService>(_ => new Atlas.Core.Settings.JsonSettingsService());
         builder.Services.AddSingleton<WakeWordDetector>();
+        builder.Services.AddSingleton(sp => new Atlas.Speech.Loop.TriggerableWakeSource(
+            new Atlas.Speech.Loop.WakeWordSource(sp.GetRequiredService<WakeWordDetector>())));
+        builder.Services.AddSingleton<Atlas.Speech.Loop.IListener>(sp =>
+            new Atlas.Speech.Loop.RecognizerListener(sp.GetRequiredService<SherpaRecognizer>()));
+        builder.Services.AddSingleton<Atlas.Speech.Loop.ISpeaker>(sp =>
+        {
+            var settings = sp.GetRequiredService<Atlas.Core.Settings.ISettingsService>();
+            return new Atlas.Speech.Loop.SherpaSpeakerAdapter(
+                sp.GetRequiredService<SherpaSpeaker>(),
+                () => (float)settings.Current.SpeechSpeed);
+        });
+
+        // Screens (view models) and the window
+        builder.Services.AddSingleton<Atlas.App.Mvvm.IUiDispatcher, WpfDispatcher>();
+        builder.Services.AddHttpClient<Atlas.App.Settings.IOllamaClient, Atlas.App.Settings.HttpOllamaClient>();
+        builder.Services.AddSingleton<Atlas.App.Chat.ChatViewModel>();
+        builder.Services.AddSingleton<Atlas.App.Memory.MemoryViewModel>();
+        builder.Services.AddSingleton<Atlas.App.Settings.SettingsViewModel>();
+        builder.Services.AddSingleton<Atlas.App.Voice.VoiceViewModel>();
+        builder.Services.AddSingleton<Atlas.App.ShellViewModel>();
+        builder.Services.AddSingleton<MainWindow>();
 
         _host = builder.Build();
     }

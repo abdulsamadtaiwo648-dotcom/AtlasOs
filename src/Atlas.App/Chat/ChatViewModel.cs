@@ -43,6 +43,7 @@ public sealed class ChatViewModel : ObservableObject
         StopCommand = new RelayCommand(Stop, () => IsBusy);
         NewChatCommand = new RelayCommand(NewChat);
         OpenConversationCommand = new RelayCommand(p => { if (p is ConversationSummary s) Open(s.Id); });
+        UseSuggestionCommand = new RelayCommand(p => { if (p is string text) InputText = text; });
         DeleteConversationCommand = new RelayCommand(p => { if (p is ConversationSummary s) Delete(s.Id); });
 
         ShowConversation();
@@ -57,6 +58,7 @@ public sealed class ChatViewModel : ObservableObject
     public RelayCommand NewChatCommand { get; }
     public RelayCommand OpenConversationCommand { get; }
     public RelayCommand DeleteConversationCommand { get; }
+    public RelayCommand UseSuggestionCommand { get; }
 
     public string InputText
     {

@@ -69,6 +69,7 @@ builder.Services.AddSingleton<IFinanceEngine, FinanceEngine>();
 // Storage
 // ======================================================
 builder.Services.AddSingleton<IConversationStore, JsonConversationStore>();
+builder.Services.AddSingleton<Atlas.Core.Settings.ISettingsService>(_ => new Atlas.Core.Settings.JsonSettingsService());
 builder.Services.AddSingleton<Atlas.Core.Interfaces.IMemoryService>(_ => new Atlas.Memory.SqliteMemoryService());
 
 // ======================================================

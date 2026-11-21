@@ -48,10 +48,23 @@ public sealed class VoiceViewModel : ObservableObject
         get => _state;
         private set
         {
-            if (Set(ref _state, value))
-                OnPropertyChanged(nameof(StatusText));
+            if (!Set(ref _state, value))
+                return;
+
+            OnPropertyChanged(nameof(StatusText));
+            OnPropertyChanged(nameof(IsActive));
+            OnPropertyChanged(nameof(IsIdle));
+            OnPropertyChanged(nameof(IsListening));
+            OnPropertyChanged(nameof(IsThinking));
+            OnPropertyChanged(nameof(IsSpeaking));
         }
     }
+
+    public bool IsActive => State != VoiceState.Stopped;
+    public bool IsIdle => State == VoiceState.Idle;
+    public bool IsListening => State == VoiceState.Listening;
+    public bool IsThinking => State == VoiceState.Thinking;
+    public bool IsSpeaking => State == VoiceState.Speaking;
 
     public bool IsHandsFree
     {
