@@ -18,7 +18,11 @@ Available Commands
 /history   List conversations
 /load      Load a conversation
 /delete    Delete a conversation
+/memory    List what Atlas remembers (/memory search <words>)
+/forget    Remove a memory by id
 /exit      Exit Atlas
+
+You can also say: "remember that ...", "forget ...", "what do you remember about ...".
 """;
     }
 }

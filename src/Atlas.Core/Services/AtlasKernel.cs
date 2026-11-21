@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Atlas.Core.Interfaces;
+using Atlas.Core.Memory;
 using Atlas.Core.Intent;
 using Atlas.Core.Planning;
 using Atlas.Tools.Services;
@@ -22,6 +23,7 @@ public class AtlasKernel : IAtlasKernel
     private readonly SmartHomeEngine _smartHome;
     private readonly AppLauncherEngine _appLauncher;
     private readonly VisionEngine _vision;
+    private readonly MemoryHandler? _memoryHandler;
 
     public AtlasKernel(
         IConversationService conversation,
@@ -33,7 +35,8 @@ public class AtlasKernel : IAtlasKernel
         IFinanceEngine finance,
         SmartHomeEngine smartHome,
         AppLauncherEngine appLauncher,
-        VisionEngine vision)
+        VisionEngine vision,
+        IMemoryService? memory = null)
     {
         _conversation = conversation;
         _dispatcher = dispatcher;
@@ -45,6 +48,7 @@ public class AtlasKernel : IAtlasKernel
         _smartHome = smartHome;
         _appLauncher = appLauncher;
         _vision = vision;
+        _memoryHandler = memory == null ? null : new MemoryHandler(memory);
     }
 
     public async Task<string> ProcessAsync(string input)
@@ -79,6 +83,10 @@ public class AtlasKernel : IAtlasKernel
         // Commands
         if (_dispatcher.TryExecute(input, out string command))
             return (command, null);
+
+        // Memory ("remember that...", "forget...", "what do you remember...")
+        if (_memoryHandler != null && MemoryPhraseParser.Parse(input) is MemoryRequest memoryRequest)
+            return (_memoryHandler.Handle(memoryRequest), null);
 
         // Simple tools
         if (_toolManager.TryExecute(input, out string tool))
